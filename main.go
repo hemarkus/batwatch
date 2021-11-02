@@ -1,6 +1,9 @@
 package main
 
 import (
+	"os"
+	"os/signal"
+	"sync"
 	"time"
 
 	"github.com/distatus/battery"
@@ -10,7 +13,6 @@ import (
 )
 
 const updateInterval time.Duration = 1
-
 var sinksReg = []sinks.Sinker{}
 var batNumber = 0
 var bats = make(chan *battery.Battery)
@@ -23,8 +25,12 @@ func main() {
 	ticker := time.NewTicker(updateInterval * time.Second)
 	done := make(chan struct{})
 
+	var wg sync.WaitGroup
+
 	// kick off source
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for {
 			select {
 			case <-done:
@@ -40,7 +46,9 @@ func main() {
 	}()
 
 	// kick off sink
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for {
 			select {
 			case <-done:
@@ -57,7 +65,14 @@ func main() {
 		}
 	}()
 
-	<-done
+	// Wait for interrupt
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+
+	<-quit
+	logrus.Info("Shutdown")
+	done <- struct{}{}
+	wg.Wait()
 }
 
 func updateBatteries() error {
