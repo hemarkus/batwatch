@@ -48,7 +48,7 @@ func main() {
 		for {
 			select {
 			case <-done:
-				done <- struct{}{}
+				logrus.Info("Source shutdown")
 				return
 			case <-ticker.C:
 				err := updateBattery(batNumber)
@@ -66,7 +66,7 @@ func main() {
 		for {
 			select {
 			case <-done:
-				done <- struct{}{}
+				logrus.Info("Sinks shutdown")
 				return
 			case b := <-bats:
 				for _, sink := range sinksReg {
@@ -85,8 +85,9 @@ func main() {
 
 	<-quit
 	logrus.Info("Shutdown")
-	done <- struct{}{}
+	close(done)
 	wg.Wait()
+	close(bats)
 }
 
 func updateBattery(batteryno int) error {
