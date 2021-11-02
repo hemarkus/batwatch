@@ -8,13 +8,12 @@ import (
 
 	"github.com/distatus/battery"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 
 	"github.com/hemarkus/batwatch/sinks"
 )
 
-const updateInterval time.Duration = 1
 var sinksReg = []sinks.Sinker{}
-var batNumber = 0
 var bats = make(chan *battery.Battery)
 
 func init() {
@@ -22,7 +21,22 @@ func init() {
 }
 
 func main() {
-	ticker := time.NewTicker(updateInterval * time.Second)
+	viper.SetDefault("battery", 0)
+	viper.SetDefault("interval", 5)
+	viper.SetConfigType("yaml")
+	viper.SetConfigName("config")
+	viper.AddConfigPath("/etc/batwatch/")
+	viper.AddConfigPath("$HOME/.batwatch")
+	viper.AddConfigPath(".")
+	err := viper.ReadInConfig()
+	if err != nil {
+		logrus.WithError(err).Fatal("Fatal error config file")
+	}
+
+	batNumber := viper.GetInt("battery")
+	updateInterval := viper.GetInt("interval")
+
+	ticker := time.NewTicker(time.Duration(updateInterval) * time.Second)
 	done := make(chan struct{})
 
 	var wg sync.WaitGroup
@@ -37,7 +51,7 @@ func main() {
 				done <- struct{}{}
 				return
 			case <-ticker.C:
-				err := updateBatteries()
+				err := updateBattery(batNumber)
 				if err != nil {
 					logrus.WithError(err).Error("Failed sourcing battery state")
 				}
@@ -75,8 +89,8 @@ func main() {
 	wg.Wait()
 }
 
-func updateBatteries() error {
-	bat, err := battery.Get(batNumber)
+func updateBattery(batteryno int) error {
+	bat, err := battery.Get(batteryno)
 	if err != nil {
 		logrus.WithError(err).Error("Could not get battery info")
 		return err
