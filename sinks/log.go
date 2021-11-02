@@ -7,6 +7,21 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+func init() {
+	if err := registerSinkFactory("log",
+		func(config map[string]interface{}) (Sinker, error) {
+			sev, ok := config["severity"]
+			if !ok {
+				return nil, fmt.Errorf("invalid log sink config; missing severity")
+			}
+			severity := sev.(string)
+			return &LogSink{Severity: severity}, nil
+		},
+	); err != nil {
+		logrus.WithError(err).Fatal("Failed registering log sink factory")
+	}
+}
+
 var severityFuncMap = map[string]func(args ...interface{}){
 	"info":  logrus.Info,
 	"debug": logrus.Debug,
