@@ -3,6 +3,7 @@ module github.com/hemarkus/batwatch
 go 1.17
 
 require (
+	github.com/ctcpip/notifize v1.0.0
 	github.com/distatus/battery v0.10.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.9.0
