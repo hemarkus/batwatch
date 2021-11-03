@@ -41,7 +41,7 @@ func (d *LogSink) Write(bat *battery.Battery) error {
 
 	logrus.WithFields(logrus.Fields{
 		"state":      bat.State,
-		"percentage": percentage,
+		"percentage": fmt.Sprintf("%.2f", percentage),
 		"current":    bat.Current,
 		"design":     bat.Design,
 		"full":       bat.Full,
