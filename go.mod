@@ -5,12 +5,12 @@ go 1.17
 require (
 	github.com/ctcpip/notifize v1.0.0
 	github.com/distatus/battery v0.10.0
+	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.9.0
 )
 
 require (
-	github.com/eclipse/paho.mqtt.golang v1.3.5 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
