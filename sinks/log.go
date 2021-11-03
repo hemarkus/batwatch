@@ -15,31 +15,37 @@ func init() {
 				return nil, fmt.Errorf("invalid log sink config; missing severity")
 			}
 			severity := sev.(string)
-			return &LogSink{Severity: severity}, nil
+			return &LogSink{LogLevel: severity}, nil
 		},
 	); err != nil {
 		logrus.WithError(err).Fatal("Failed registering log sink factory")
 	}
 }
 
-var severityFuncMap = map[string]func(args ...interface{}){
-	"info":  logrus.Info,
-	"debug": logrus.Debug,
+var logLevelMap = map[string]logrus.Level{
+	"info":  logrus.InfoLevel,
+	"debug": logrus.DebugLevel,
 }
 
 type LogSink struct {
-	Severity string
+	LogLevel string
 }
 
 func (d *LogSink) Write(bat *battery.Battery) error {
-	f, ok := severityFuncMap[d.Severity]
+	f, ok := logLevelMap[d.LogLevel]
 	if !ok {
-		return fmt.Errorf("unsupported severity %v", d.Severity)
+		return fmt.Errorf("unsupported severity %v", d.LogLevel)
 	}
 
 	percentage := bat.Current * 100 / bat.Design
 
-	f(fmt.Sprintf("Battery is %v at %f %%", bat.State, percentage))
+	logrus.WithFields(logrus.Fields{
+		"state":      bat.State,
+		"percentage": percentage,
+		"current":    bat.Current,
+		"design":     bat.Design,
+		"full":       bat.Full,
+	}).Log(f, "Battery status")
 
 	return nil
 }
