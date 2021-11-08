@@ -3,12 +3,12 @@ package sinks
 import (
 	"fmt"
 
-	"github.com/distatus/battery"
+	"github.com/hemarkus/batwatch/source"
 )
 
 type Sinker interface {
 	Name() string
-	Write(bat *battery.Battery) error
+	Write(bat *source.Battery) error
 }
 
 type sinkFactory func(config map[string]interface{}) (Sinker, error)

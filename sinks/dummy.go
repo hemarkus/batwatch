@@ -1,8 +1,9 @@
 package sinks
 
 import (
-	"github.com/distatus/battery"
 	"github.com/sirupsen/logrus"
+
+	"github.com/hemarkus/batwatch/source"
 )
 
 func init() {
@@ -14,7 +15,7 @@ func init() {
 type DummySink struct {
 }
 
-func (d *DummySink) Write(bat *battery.Battery) error {
+func (d *DummySink) Write(bat *source.Battery) error {
 	return nil
 }
 

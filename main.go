@@ -11,19 +11,20 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/hemarkus/batwatch/sinks"
+	"github.com/hemarkus/batwatch/source"
 )
 
 var snks = []sinks.Sinker{}
-var bats = make(chan *battery.Battery)
+var bats = make(chan *source.Battery)
 
 func init() {
 	viper.SetDefault("battery", 0)
 	viper.SetDefault("interval", 5)
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("config")
-	viper.AddConfigPath("/etc/batwatch/")
-	viper.AddConfigPath("$HOME/.batwatch")
 	viper.AddConfigPath(".")
+	viper.AddConfigPath("$HOME/.batwatch")
+	viper.AddConfigPath("/etc/batwatch/")
 	err := viper.ReadInConfig()
 	if err != nil {
 		logrus.WithError(err).Fatal("Fatal error config file")
@@ -51,6 +52,7 @@ func init() {
 		if err != nil {
 			logrus.WithError(err).Fatal("Failed initializing sink")
 		}
+		logrus.WithField("name", snk.Name()).WithField("sink", snk).Info("Sink initialized")
 		snks = append(snks, snk)
 	}
 }
@@ -120,7 +122,7 @@ func updateBattery(batteryno int) error {
 		return err
 	}
 
-	bats <- bat
+	bats <- &source.Battery{Battery: bat}
 
 	return nil
 }

@@ -3,8 +3,9 @@ package sinks
 import (
 	"fmt"
 
-	"github.com/distatus/battery"
 	"github.com/sirupsen/logrus"
+
+	"github.com/hemarkus/batwatch/source"
 )
 
 func init() {
@@ -31,17 +32,15 @@ type LogSink struct {
 	LogLevel string
 }
 
-func (d *LogSink) Write(bat *battery.Battery) error {
+func (d *LogSink) Write(bat *source.Battery) error {
 	f, ok := logLevelMap[d.LogLevel]
 	if !ok {
 		return fmt.Errorf("unsupported severity %v", d.LogLevel)
 	}
 
-	percentage := bat.Current * 100 / bat.Design
-
 	logrus.WithFields(logrus.Fields{
 		"state":      bat.State,
-		"percentage": fmt.Sprintf("%.2f", percentage),
+		"percentage": fmt.Sprintf("%.2f", bat.Percentage()),
 		"current":    bat.Current,
 		"design":     bat.Design,
 		"full":       bat.Full,

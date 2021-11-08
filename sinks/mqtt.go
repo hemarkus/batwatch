@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/distatus/battery"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/sirupsen/logrus"
+
+	"github.com/hemarkus/batwatch/source"
 )
 
 func init() {
@@ -118,7 +119,7 @@ func (m *MQTTSink) sendConfig() error {
 	return nil
 }
 
-func (m *MQTTSink) Write(bat *battery.Battery) error {
+func (m *MQTTSink) Write(bat *source.Battery) error {
 	if !m.client.IsConnected() {
 		if err := m.Connect(); err != nil {
 			return fmt.Errorf("connection failed: %w", err)
@@ -132,8 +133,7 @@ func (m *MQTTSink) Write(bat *battery.Battery) error {
 	}
 
 	percentTopic := fmt.Sprintf("%s/%s", m.baseTopic, "percentage")
-	percentage := bat.Current * 100 / bat.Design
-	token = m.client.Publish(percentTopic, 0, false, fmt.Sprintf("%.2f", percentage))
+	token = m.client.Publish(percentTopic, 0, false, fmt.Sprintf("%.2f", bat.Percentage()))
 	token.Wait()
 	return token.Error()
 }
